@@ -1,70 +1,57 @@
 <template>
-  <div class="find-page">
-    <div class="search-container">
-      <h2 class="search-header">Найти отель</h2>
-      <div class="selectors-container">
-        <LocationSelector></LocationSelector>
-        <DateSelector></DateSelector>
-        <GuestSelector @updateGuests="updateGuests"></GuestSelector>
-      </div>
-      <button @click="search" class="search-btn">Найти</button>
-    </div>
+  <div>
+    <h2>Список отелей</h2>
+
+    <input type="text" v-model="searchCity" placeholder="Введите город">
+
+    <ul v-if="hotelsFiltered.length > 0">
+      <li v-for="hotel in hotelsFiltered" :key="hotel.id" @click="goToHotelPage(hotel.id)" style="cursor: pointer;">
+        {{ hotel.name }} - {{ hotel.location }} - {{ hotel.price }}
+      </li>
+    </ul>
+    <p v-else-if="!hotelsFiltered.length && !hotelStore.loading && searchCity.trim() !== ''">Нет отелей в данном городе</p>
+    <p v-else>Введите название города...</p>
   </div>
 </template>
 
 <script>
-import LocationSelector from '/resources/js/Components/LocationSelector.vue'; 
-import DateSelector from '/resources/js/Components/DateSelector.vue'; 
-import GuestSelector from '/resources/js/Components/GuestSelector.vue';
-import { useSearchStore } from '/resources/js/Stores/SearchStore.js';
-import axios from 'axios';
+import { defineComponent, onMounted, ref, watch } from 'vue';
+import { useHotelStore } from '/resources/js/Stores/hotelStore.js';
+import { useRouter } from 'vue-router';
 
-export default {
-  components: {
-    LocationSelector,
-    DateSelector,
-    GuestSelector
-  },
-  data() {
-    return {
-      location: '',
-      checkInDate: '',
-      checkOutDate: '',
-      guests: 0
-    }
-  },
-  methods: {
-    async search() {
-      const searchStore = useSearchStore();
-      const searchQuery = this.buildSearchQuery();
+export default defineComponent({
+  setup() {
+    const hotelStore = useHotelStore();
+    const searchCity = ref('');
+    const router = useRouter();
 
-      try {
-        const response = await axios.get('/api/hotels', {
-          params: { search: searchQuery.location }
-        });
-        searchStore.hotels = response.data;
-        console.log('Ответ от сервера:', searchStore.hotels);
-      } catch (error) {
-        console.error('Ошибка при поиске отелей:', error);
+    onMounted(() => {
+      hotelStore.fetchHotels();
+    });
+
+    const hotelsFiltered = ref([]);
+    const filterHotels = () => {
+      if (searchCity.value.trim() === '') {
+        hotelsFiltered.value = [];
+      } else {
+        hotelsFiltered.value = hotelStore.hotels.filter(hotel =>
+          hotel.location.toLowerCase() === searchCity.value.toLowerCase()
+        );
       }
-    },
-    buildSearchQuery() {
-      this.location = this.location;
-      let query = `location=${this.location}`;
-      return query;
-    },
-    updateLocation(location) {
-      this.location = location;
-    },
-    updateCheckInDate(checkInDate) {
-      this.checkInDate = checkInDate;
-    },
-    updateCheckOutDate(checkOutDate) {
-      this.checkOutDate = checkOutDate;
-    },
-    updateGuests(guests) {
-      this.guests = guests;
-    }
-  }
-}
+    };
+
+    watch(searchCity, filterHotels);
+
+    const goToHotelPage = (hotelId) => {
+      router.push({ name: 'HotelPage', params: { id: hotelId } });
+    };
+
+    return {
+      searchCity,
+      hotelsFiltered,
+      hotelStore,
+      goToHotelPage
+    };
+  },
+});
 </script>

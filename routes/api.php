@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Hotel;
+use App\Http\Controllers\HotelController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,11 +18,9 @@ use App\Models\Hotel;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/hotels', function (Request $request) {
-    $search = $request->input('search', '');
-
-    $filteredHotels = Hotel::where('location', 'like', '%' . $search . '%')->get();
-
-    return response()->json($filteredHotels);
-});
+Route::get('/hotels', [HotelController::class, 'index']);
+Route::get('/hotels/{id}', [HotelController::class, 'show']);
+Route::post('/hotels', [HotelController::class, 'store']);
+Route::put('/hotels/{id}', [HotelController::class, 'update']);
+Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
 
