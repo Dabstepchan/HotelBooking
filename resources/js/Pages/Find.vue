@@ -11,15 +11,22 @@
     </ul>
     <p v-else-if="!hotelsFiltered.length && !hotelStore.loading && searchCity.trim() !== ''">Нет отелей в данном городе</p>
     <p v-else>Введите название города...</p>
+
+    <!-- Включение компонента чата в нижнем правом углу -->
+    <ChatSupport />
   </div>
 </template>
 
 <script>
-import { defineComponent, onMounted, ref, watch } from 'vue';
+import { defineComponent, ref, onMounted, watch } from 'vue';
+import ChatSupport from '/resources/js/Components/ChatSupport.vue';
 import { useHotelStore } from '/resources/js/Stores/hotelStore.js';
 import { useRouter } from 'vue-router';
 
 export default defineComponent({
+  components: {
+    ChatSupport // Регистрируем компонент чата
+  },
   setup() {
     const hotelStore = useHotelStore();
     const searchCity = ref('');

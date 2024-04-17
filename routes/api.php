@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Hotel;
 use App\Http\Controllers\HotelController;
+use App\Http\Controllers\ChatController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,4 +24,5 @@ Route::get('/hotels/{id}', [HotelController::class, 'show']);
 Route::post('/hotels', [HotelController::class, 'store']);
 Route::put('/hotels/{id}', [HotelController::class, 'update']);
 Route::delete('/hotels/{id}', [HotelController::class, 'destroy']);
-
+Route::get('/messages', [ChatController::class, 'messages']);
+Route::post('/send', [ChatController::class, 'send']);
