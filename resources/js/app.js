@@ -1,3 +1,5 @@
+import './bootstrap';
+
 import { createApp } from 'vue';
 import { createPinia } from 'pinia'
 import App from '/resources/js/app.vue';
