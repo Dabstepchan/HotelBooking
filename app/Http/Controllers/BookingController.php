@@ -2,61 +2,60 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\Booking\IndexBookingActionContract;
+use App\Contracts\Booking\StoreBookingActionContract;
+use App\Contracts\Booking\ShowBookingActionContract;
+use App\Contracts\Booking\UpdateBookingActionContract;
+use App\Contracts\Booking\DestroyBookingActionContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\Booking;
 
 class BookingController extends Controller
 {
-    public function index()
+    protected $indexBookingAction;
+    protected $storeBookingAction;
+    protected $showBookingAction;
+    protected $updateBookingAction;
+    protected $destroyBookingAction;
+
+    public function __construct(
+        IndexBookingActionContract $indexBookingAction,
+        StoreBookingActionContract $storeBookingAction,
+        ShowBookingActionContract $showBookingAction,
+        UpdateBookingActionContract $updateBookingAction,
+        DestroyBookingActionContract $destroyBookingAction
+    )
     {
-        $bookings = Booking::all();
-        return response()->json(['bookings' => $bookings], 200);
+        $this->indexBookingAction = $indexBookingAction;
+        $this->storeBookingAction = $storeBookingAction;
+        $this->showBookingAction = $showBookingAction;
+        $this->updateBookingAction = $updateBookingAction;
+        $this->destroyBookingAction = $destroyBookingAction;
     }
 
-    public function store(Request $request)
+    public function index(): JsonResponse
     {
-        $this->validate($request, [
-            'user_id' => 'required|exists:users,id',
-            'room_id' => 'required|exists:rooms,id',
-            'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
-            'guests' => 'required|integer|min:1',
-            'total_price' => 'required|numeric|min:0',
-        ]);
-
-        $booking = Booking::create($request->all());
-
-        return response()->json(['booking' => $booking], 201);
+        return $this->indexBookingAction->index();
     }
 
-    public function show($id)
+    public function store(Request $request): JsonResponse
     {
-        $booking = Booking::findOrFail($id);
-        return response()->json(['booking' => $booking], 200);
+        return $this->storeBookingAction->store($request);
     }
 
-    public function update(Request $request, $id)
+    public function show($id): JsonResponse
     {
-        $this->validate($request, [
-            'user_id' => 'exists:users,id',
-            'room_id' => 'exists:rooms,id',
-            'check_in' => 'date',
-            'check_out' => 'date|after:check_in',
-            'guests' => 'integer|min:1',
-            'total_price' => 'numeric|min:0',
-        ]);
-
-        $booking = Booking::findOrFail($id);
-        $booking->update($request->all());
-
-        return response()->json(['booking' => $booking], 200);
+        return $this->showBookingAction->show($id);
     }
 
-    public function destroy($id)
+    public function update(Request $request, $id): JsonResponse
     {
-        $booking = Booking::findOrFail($id);
-        $booking->delete();
+        return $this->updateBookingAction->update($request, $id);
+    }
 
-        return response()->json(['message' => 'Booking deleted successfully'], 200);
+    public function destroy($id): JsonResponse
+    {
+        return $this->destroyBookingAction->destroy($id);
     }
 }
+
